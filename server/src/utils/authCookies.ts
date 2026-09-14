@@ -4,40 +4,30 @@ import { env } from "../config/env.js";
 
 const isProduction = env.nodeEnv === "production";
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
+  path: "/",
+};
+
 export const setAuthCookies = (
   res: Response,
   accessToken: string,
   refreshToken: string,
 ) => {
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
+    ...cookieOptions,
     maxAge: 15 * 60 * 1000,
-    path: "/",
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
+    ...cookieOptions,
     maxAge: 30 * 24 * 60 * 60 * 1000,
-    path: "/",
   });
 };
 
 export const clearAuthCookies = (res: Response) => {
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
-    path: "/",
-  });
-
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
-    path: "/",
-  });
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("refreshToken", cookieOptions);
 };
