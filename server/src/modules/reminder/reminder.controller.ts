@@ -199,3 +199,21 @@ export const processDue = async (
   }
 };
 
+export const processDueInternal = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = await processDueReminders();
+
+    return res.status(200).json({
+      success: true,
+      message: "Due reminders processed successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+

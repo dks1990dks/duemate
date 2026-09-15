@@ -22,15 +22,15 @@ if (!fromPhoneNumber) {
 
 const client = twilio(accountSid, authToken);
 
-export interface SendSmsInput {
-  to: string;
-  body: string;
-}
+import type {
+  SmsProvider,
+  SmsProviderInput,
+} from "./provider.types.js";
 
 export const sendSms = async ({
-  to,
+    to,
   body,
-}: SendSmsInput) => {
+}: SmsProviderInput) => {
   const message = await client.messages.create({
     body,
     from: fromPhoneNumber,
@@ -49,4 +49,8 @@ export const sendSms = async ({
   return {
     messageId: message.sid,
   };
+};
+
+export const smsProvider: SmsProvider = {
+  send: sendSms,
 };

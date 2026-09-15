@@ -4,6 +4,7 @@ import * as reminderController from "./reminder.controller.js";
 
 import { requireAuth } from "../../middleware/authMiddleware.js";
 import { validateRequest } from "../../middleware/validate.js";
+import { requireInternalCronSecret } from "../../middleware/internalCron.middleware.js";
 
 import {
   createReminderSchema,
@@ -13,9 +14,13 @@ import {
 
 const router = Router();
 
+router.post(
+  "/internal/process",
+  requireInternalCronSecret,
+  reminderController.processDueInternal,
+);
+
 router.use(requireAuth);
-
-
 
 router.post(
   "/",

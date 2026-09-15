@@ -27,15 +27,15 @@ if (!contentSid) {
 
 const client = twilio(accountSid, authToken);
 
-export interface SendWhatsAppInput {
-  to: string;
-  variables: Record<string, string>;
-}
+import type {
+  WhatsAppProvider,
+  WhatsAppProviderInput,
+} from "./provider.types.js";
 
 export const sendWhatsApp = async ({
   to,
   variables,
-}: SendWhatsAppInput) => {
+}: WhatsAppProviderInput) => {
   const message = await client.messages.create({
     from: whatsappFrom,
     to: `whatsapp:${to}`,
@@ -57,4 +57,8 @@ export const sendWhatsApp = async ({
   return {
     messageId: message.sid,
   };
+};
+
+export const whatsappProvider: WhatsAppProvider = {
+  send: sendWhatsApp,
 };

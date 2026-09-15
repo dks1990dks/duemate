@@ -14,19 +14,17 @@ if (!fromEmail) {
 
 const resend = new Resend(apiKey);
 
-export interface SendEmailInput {
-  to: string;
-  subject: string;
-  text: string;
-  html: string;
-}
+import type {
+  EmailProvider,
+  EmailProviderInput,
+} from "./provider.types.js";
 
 export const sendEmail = async ({
   to,
   subject,
   text,
   html,
-}: SendEmailInput) => {
+}: EmailProviderInput) => {
   
   const { data, error } = await resend.emails.send({
     from: fromEmail,
@@ -54,4 +52,8 @@ export const sendEmail = async ({
   return {
     messageId: data.id,
   };
+};
+
+export const emailProvider: EmailProvider = {
+  send: sendEmail,
 };

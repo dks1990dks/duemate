@@ -1,10 +1,7 @@
 import { env } from "../../config/env.js";
 import { Notification } from "./notification.model.js";
 import { User } from "../../models/User.js";
-import { sendEmail } from "./providers/email.provider.js";
-import { sendSms } from "./providers/sms.provider.js";
-import { sendWhatsApp } from "./providers/whatsapp.provider.js";
-
+import { notificationProviders } from "./providers/provider.registry.js";
 import type {
   CreateInAppNotificationInput,
   NotificationPayload,
@@ -457,7 +454,7 @@ This is an automated reminder from DueMate.
 </html>
 `;
 
-  const result = await sendEmail({
+  const result = await notificationProviders.email.send({
     to: user.email,
     subject,
     text,
@@ -485,7 +482,7 @@ export const sendSmsNotification = async (
     throw new Error("User mobile number not available");
   }
 
-  const result = await sendSms({
+  const result = await notificationProviders.sms.send({
     to: user.phone,
     body: `DueMate Reminder: ${payload.title}. ${payload.message}`,
   });
@@ -515,7 +512,7 @@ export const sendWhatsAppNotification = async (
 
   const dueDate = dueDateMatch?.[1] ?? "your due date";
 
-  const result = await sendWhatsApp({
+  const result = await notificationProviders.whatsapp.send({
     to: user.phone,
     variables: {
       "1": user.name,
