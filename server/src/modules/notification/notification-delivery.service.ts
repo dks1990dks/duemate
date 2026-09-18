@@ -70,3 +70,67 @@ export const getObligationDeliveryHistory = async (
     .sort({ createdAt: 1 })
     .lean();
 };
+
+export const updateWhatsAppDeliveryFromWebhook = async ({
+  messageId,
+  eventType,
+  error,
+  retryable,
+}: {
+  messageId: string;
+  eventType: "enqueued" | "sent" | "delivered" | "read" | "failed";
+  error?: string;
+  retryable?: boolean;
+}) => {
+  const delivery = await NotificationDelivery.findOne({
+    messageId,
+    channel: "WHATSAPP",
+  });
+
+  if (!delivery) {
+    return null;
+  }
+
+  if (eventType === "failed") {
+    delivery.status = "FAILED";
+    delivery.success = false;
+    delivery.retryable = retryable ?? false;
+    delivery.error = error ?? "WhatsApp delivery failed";
+    delivery.deliveredAt = null;
+
+    await delivery.save();
+
+    return delivery;
+  }
+
+  if (eventType === "delivered") {
+    delivery.status = "SENT";
+    delivery.success = true;
+    delivery.retryable = false;
+    delivery.error = null;
+    delivery.deliveredAt = new Date();
+
+    await delivery.save();
+
+    return delivery;
+  }
+
+  if (eventType === "sent" || eventType === "enqueued") {
+    delivery.status = "SENT";
+    delivery.success = true;
+    delivery.retryable = false;
+
+    await delivery.save();
+
+    return delivery;
+  }
+
+  // "read"
+  delivery.status = "SENT";
+  delivery.success = true;
+  delivery.retryable = false;
+
+  await delivery.save();
+
+  return delivery;
+};
