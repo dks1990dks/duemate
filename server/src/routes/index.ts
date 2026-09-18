@@ -9,6 +9,8 @@ import notificationRoutes from "../modules/notification/notification.routes.js";
 import notificationPreferenceRoutes from
   "../modules/notification-preference/notification-preference.routes.js";
 
+import gupshupWebhookRoutes from "../modules/webhook/gupshup-webhook.routes.js";  
+
 const router = Router();
 
 router.use("/auth", authRoutes);
@@ -36,6 +38,11 @@ router.use(
 router.use(
   "/notification-preferences",
   notificationPreferenceRoutes,
+);
+
+router.use(
+  "/webhooks/gupshup",
+  gupshupWebhookRoutes,
 );
 
 export default router;
