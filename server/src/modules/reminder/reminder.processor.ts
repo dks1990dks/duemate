@@ -86,6 +86,36 @@ export const processDueReminders = async () => {
           accountReference: obligation.accountReference,
         },
       };
+      // Create delivery records before dispatching.
+      // This prevents a fast provider webhook from arriving
+      // before the corresponding delivery record exists.
+      await NotificationDelivery.bulkWrite(
+        channelsToDispatch.map((channel) => ({
+          updateOne: {
+            filter: {
+              reminderId: claimedReminder._id,
+              userId: claimedReminder.userId,
+              channel,
+            },
+            update: {
+              $set: {
+                userId: claimedReminder.userId,
+                reminderId: claimedReminder._id,
+                obligationId: claimedReminder.obligationId,
+                channel,
+                status: "FAILED",
+                success: false,
+                retryable: false,
+                messageId: null,
+                error: "Notification delivery is being processed",
+                deliveredAt: null,
+              },
+            },
+            upsert: true,
+          },
+        })),
+      );
+
       // Dispatch through all configured channels.
       const deliveryResults = await dispatchNotification(notificationPayload);
 
@@ -94,6 +124,7 @@ export const processDueReminders = async () => {
         results: deliveryResults,
       });
 
+      // Update delivery records with the actual provider results.
       await NotificationDelivery.bulkWrite(
         deliveryResults.map((result) => ({
           updateOne: {
@@ -105,7 +136,9 @@ export const processDueReminders = async () => {
             update: {
               $set: {
                 userId: claimedReminder.userId,
+                reminderId: claimedReminder._id,
                 obligationId: claimedReminder.obligationId,
+                channel: result.channel,
                 status: result.status,
                 success: result.success,
                 retryable: result.retryable,
@@ -114,11 +147,9 @@ export const processDueReminders = async () => {
                 deliveredAt: result.status === "SENT" ? new Date() : null,
               },
             },
-            upsert: true,
           },
         })),
       );
-
       const failedResults = deliveryResults.filter(
         (result) => result.status === "FAILED",
       );
