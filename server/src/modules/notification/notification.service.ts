@@ -7,6 +7,8 @@ import type {
   NotificationPayload,
 } from "./notification.types.js";
 
+import logger from "../../utils/logger.js";
+
 const escapeHtml = (value: string): string =>
   value
     .replace(/&/g, "&amp;")
@@ -461,10 +463,9 @@ This is an automated reminder from DueMate.
     html,
   });
 
-  console.log("[Notification] EMAIL delivered", {
+  logger.info("[Notification] EMAIL delivered", {
     reminderId: payload.reminderId,
     userId: payload.userId,
-    email: user.email,
     messageId: result.messageId,
   });
 };
@@ -487,10 +488,9 @@ export const sendSmsNotification = async (
     body: `DueMate Reminder: ${payload.title}. ${payload.message}`,
   });
 
-  console.log("[Notification] SMS delivered", {
+  logger.info("[Notification] SMS delivered", {
     reminderId: payload.reminderId,
     userId: payload.userId,
-    phoneNumber: user.phone,
     messageId: result.messageId,
   });
 };
@@ -498,7 +498,9 @@ export const sendSmsNotification = async (
 export const sendWhatsAppNotification = async (
   payload: NotificationPayload,
 ): Promise<void> => {
-  const user = await User.findById(payload.userId).select("name email phone");
+  const user = await User.findById(payload.userId).select(
+    "name email phone",
+  );
 
   if (!user) {
     throw new Error("User not found");
@@ -508,23 +510,33 @@ export const sendWhatsAppNotification = async (
     throw new Error("User mobile number not available");
   }
 
-  const dueDateMatch = payload.message.match(/due on (.+)\.?$/i);
+  const dueDate = payload.obligation.dueDate.toLocaleDateString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    },
+  );
 
-  const dueDate = dueDateMatch?.[1] ?? "your due date";
+  const amount = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: payload.obligation.currency,
+  }).format(payload.obligation.amount);
 
   const result = await notificationProviders.whatsapp.send({
     to: user.phone,
     variables: {
       "1": user.name,
-      "2": payload.title,
+      "2": payload.obligation.title,
       "3": dueDate,
+      "4": amount,
     },
   });
 
-  console.log("[Notification] WHATSAPP delivered", {
+  logger.info("[Notification] WHATSAPP delivered", {
     reminderId: payload.reminderId,
     userId: payload.userId,
-    phoneNumber: user.phone,
     messageId: result.messageId,
   });
 };

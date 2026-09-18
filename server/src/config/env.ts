@@ -43,7 +43,7 @@ const envSchema = z.object({
 
   SMS_PROVIDER: z.enum(["twilio", "mock"]).default("mock"),
 
-  WHATSAPP_PROVIDER: z.enum(["twilio", "mock"]).default("mock"),
+  WHATSAPP_PROVIDER: z.enum(["twilio", "gupshup", "mock"]).default("mock"),
 
   // ------------------------------------------------------------
   // Email - Resend
@@ -68,6 +68,15 @@ const envSchema = z.object({
   TWILIO_WHATSAPP_FROM: z.string().optional(),
 
   TWILIO_WHATSAPP_CONTENT_SID: z.string().optional(),
+
+  // ------------------------------------------------------------
+  // Gupshup - WhatsApp
+  // ------------------------------------------------------------
+
+  GUPSHUP_API_KEY: z.string().optional(),
+  GUPSHUP_APP_NAME: z.string().optional(),
+  GUPSHUP_SOURCE_PHONE: z.string().optional(),
+  GUPSHUP_TEMPLATE_ID: z.string().optional(),
 
   // ------------------------------------------------------------
   // Reminder Scheduler
@@ -121,6 +130,11 @@ export const env = {
   twilioWhatsAppFrom: parsedEnv.data.TWILIO_WHATSAPP_FROM,
 
   twilioWhatsAppContentSid: parsedEnv.data.TWILIO_WHATSAPP_CONTENT_SID,
+
+  gupshupApiKey: parsedEnv.data.GUPSHUP_API_KEY,
+  gupshupAppName: parsedEnv.data.GUPSHUP_APP_NAME,
+  gupshupSourcePhone: parsedEnv.data.GUPSHUP_SOURCE_PHONE,
+  gupshupTemplateId: parsedEnv.data.GUPSHUP_TEMPLATE_ID,
 
   reminderSchedulerIntervalMs: parsedEnv.data.REMINDER_SCHEDULER_INTERVAL_MS,
 

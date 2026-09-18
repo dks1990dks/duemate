@@ -109,12 +109,20 @@ const Header = ({ onMenuClick }: HeaderProps) => {
           ☰
         </button>
 
-        <div>
-          <p className="text-sm font-medium text-slate-900">DueMate</p>
+        <div className="flex items-center gap-2.5">
+          <img
+            src="/duemate-icon.png"
+            alt="DueMate"
+            className="h-9 w-9 rounded-lg object-cover"
+          />
 
-          <p className="hidden text-xs text-slate-500 sm:block">
-            Never miss a due date.
-          </p>
+          <div>
+            <p className="text-sm font-semibold text-slate-900">DueMate</p>
+
+            <p className="hidden text-xs text-slate-500 sm:block">
+              Never miss a due date.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -147,7 +155,8 @@ const Header = ({ onMenuClick }: HeaderProps) => {
           {isNotificationOpen && (
             <div
               role="menu"
-              className="fixed left-2 right-2 top-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-12 sm:w-96">
+              className="fixed left-2 right-2 top-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-12 sm:w-96"
+            >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                 <div>

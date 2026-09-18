@@ -245,7 +245,7 @@ export const claimReminderForProcessing = async (
           $lte: now,
         },
         retryCount: {
-          $lt: 3,
+          $lt: REMINDER_MAX_RETRIES,
         },
       },
     ],
@@ -328,7 +328,8 @@ export const markReminderAsFailed = async (
 
   const nextRetryCount = reminder.retryCount + 1;
 
-  const canRetry = shouldRetry && nextRetryCount < 3;
+  const canRetry =
+  shouldRetry && nextRetryCount < REMINDER_MAX_RETRIES;
 
   const nextRetryAt = canRetry ? getNextRetryAt(nextRetryCount) : null;
 

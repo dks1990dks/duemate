@@ -1,11 +1,13 @@
 import app from "./app.js";
+import { connectDatabase, disconnectDatabase } from "./config/database.js";
 import {
-  connectDatabase,
-  disconnectDatabase,
-} from "./config/database.js";
-import { startReminderScheduler } from "./modules/reminder/reminder.worker.js";
+  startReminderScheduler,
+  stopReminderScheduler,
+} from "./modules/reminder/reminder.worker.js";
+
 import {
   startNotificationCleanupScheduler,
+  stopNotificationCleanupScheduler,
 } from "./modules/notification/notification.cleanup.scheduler.js";
 
 import { env } from "./config/env.js";
@@ -22,6 +24,9 @@ const startServer = async (): Promise<void> => {
 
   const shutdown = async (signal: string) => {
     logger.info(`${signal} received. Shutting down...`);
+
+    stopReminderScheduler();
+    stopNotificationCleanupScheduler();
 
     server.close(async () => {
       await disconnectDatabase();

@@ -11,6 +11,8 @@ import type {
   ObligationStatus,
 } from "./obligation.types.js";
 
+import { AppError } from "../../utils/AppError.js";
+
 type UpdateObligationData = {
   title?: string;
   type?: ObligationType;
@@ -29,11 +31,11 @@ export const createObligation = async (data: Record<string, unknown>) => {
   const userId = data.userId;
 
   if (!(dueDate instanceof Date)) {
-    throw new Error("Invalid due date");
+    throw new AppError("Invalid due date", 400);
   }
 
   if (typeof userId !== "string") {
-    throw new Error("Invalid user ID");
+    throw new AppError("Invalid user ID", 400);
   }
 
   const obligation = await Obligation.create({
@@ -216,8 +218,9 @@ export const markObligationAsPaid = async (
   );
 
   if (!nextDueDate) {
-    throw new Error(
+    throw new AppError(
       "Unable to calculate next due date for recurring obligation.",
+      400,
     );
   }
 

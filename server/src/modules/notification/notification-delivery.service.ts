@@ -43,7 +43,7 @@ export const getRetryableChannels = async (
     }
 
     // Retryable FAILED.
-    return true;
+    return delivery.status === "FAILED" && delivery.retryable === true;
   });
 };
 

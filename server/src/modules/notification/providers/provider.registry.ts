@@ -5,17 +5,17 @@ import { mockSmsProvider } from "./mock-sms.provider.js";
 import { mockWhatsAppProvider } from "./mock-whatsapp.provider.js";
 import { smsProvider } from "./sms.provider.js";
 import { whatsappProvider } from "./whatsapp.provider.js";
+import { gupshupWhatsAppProvider } from "./gupshup-whatsapp.provider.js";
 
 export const notificationProviders = {
   email: emailProvider,
 
-  sms:
-    env.smsProvider === "mock"
-      ? mockSmsProvider
-      : smsProvider,
+  sms: env.smsProvider === "mock" ? mockSmsProvider : smsProvider,
 
   whatsapp:
     env.whatsappProvider === "mock"
       ? mockWhatsAppProvider
-      : whatsappProvider,
+      : env.whatsappProvider === "gupshup"
+        ? gupshupWhatsAppProvider
+        : whatsappProvider,
 } as const;

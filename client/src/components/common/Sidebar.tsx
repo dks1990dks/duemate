@@ -50,16 +50,23 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
           <div>
             {/* Logo */}
             <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
-              <div>
-                <div className="text-xl font-bold text-slate-900">
-                  DueMate
-                </div>
+              <div className="flex items-center gap-3">
+  <img
+    src="/duemate-icon.png"
+    alt="DueMate"
+    className="h-10 w-10 rounded-xl object-cover"
+  />
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Financial reminder manager
-                </p>
-              </div>
+  <div>
+    <div className="text-xl font-bold text-slate-900">
+      DueMate
+    </div>
 
+    <p className="mt-1 text-xs text-slate-500">
+      Financial reminder manager
+    </p>
+  </div>
+</div>
               {/* Mobile Close Button */}
               <button
                 type="button"

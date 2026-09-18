@@ -13,6 +13,7 @@ import { dispatchNotification } from "../notification/notification.dispatcher.js
 import type { NotificationPayload } from "../notification/notification.types.js";
 import { NotificationDelivery } from "../notification/notification-delivery.model.js";
 import { getRetryableChannels } from "../notification/notification-delivery.service.js";
+import logger from "../../utils/logger.js";
 
 export const processDueReminders = async () => {
   await recoverStuckReminders();
@@ -88,7 +89,7 @@ export const processDueReminders = async () => {
       // Dispatch through all configured channels.
       const deliveryResults = await dispatchNotification(notificationPayload);
 
-      console.log("[Reminder] Notification delivery results:", {
+      logger.info("[Reminder] Notification delivery results:", {
         reminderId,
         results: deliveryResults,
       });
@@ -122,14 +123,6 @@ export const processDueReminders = async () => {
         (result) => result.status === "FAILED",
       );
 
-      const retryableFailedResults = failedResults.filter(
-        (result) => result.retryable,
-      );
-
-      const nonRetryableFailedResults = failedResults.filter(
-        (result) => !result.retryable,
-      );
-
       const sentResults = deliveryResults.filter(
         (result) => result.status === "SENT",
       );
@@ -138,7 +131,7 @@ export const processDueReminders = async () => {
         (result) => result.status === "NOT_CONFIGURED",
       );
 
-      console.log("[Reminder] Notification delivery summary:", {
+      logger.info("[Reminder] Notification delivery summary:", {
         reminderId,
         sent: sentResults.map((result) => result.channel),
         failed: failedResults.map((result) => result.channel),
@@ -186,13 +179,13 @@ export const processDueReminders = async () => {
           shouldRetry,
         );
       } catch (markFailedError) {
-        console.error(
+        logger.error(
           `[Reminder] Failed to update reminder ${reminderId} to FAILED`,
           markFailedError,
         );
       }
 
-      console.error(`[Reminder] Processing failed for ${reminderId}`, error);
+      logger.error(`[Reminder] Processing failed for ${reminderId}`, error);
     }
   }
 

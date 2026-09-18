@@ -1,18 +1,20 @@
 import { Request, Response } from "express";
 
 import { AppError } from "../../utils/AppError.js";
-import { createObligation, getMyObligations, getObligationById, updateObligation, 
-  archiveObligation, markObligationAsPaid, pauseObligation, resumeObligation, } from "./obligation.service.js";
+import {
+  createObligation,
+  getMyObligations,
+  getObligationById,
+  updateObligation,
+  archiveObligation,
+  markObligationAsPaid,
+  pauseObligation,
+  resumeObligation,
+} from "./obligation.service.js";
 
-export const create = async (
-  req: Request,
-  res: Response,
-) => {
+export const create = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
   const obligation = await createObligation({
@@ -29,20 +31,12 @@ export const create = async (
   });
 };
 
-export const getAll = async (
-  req: Request,
-  res: Response,
-) => {
+export const getAll = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
-  const obligations = await getMyObligations(
-    req.user.id,
-  );
+  const obligations = await getMyObligations(req.user.id);
 
   return res.status(200).json({
     success: true,
@@ -53,36 +47,21 @@ export const getAll = async (
   });
 };
 
-export const getById = async (
-  req: Request,
-  res: Response,
-) => {
+export const getById = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
   const { id } = req.params;
 
-if (typeof id !== "string") {
-  throw new AppError(
-    "Invalid obligation ID",
-    400,
-  );
-}
+  if (typeof id !== "string") {
+    throw new AppError("Invalid obligation ID", 400);
+  }
 
-const obligation = await getObligationById(
-  id,
-  req.user.id,
-);
+  const obligation = await getObligationById(id, req.user.id);
 
   if (!obligation) {
-    throw new AppError(
-      "Obligation not found",
-      404,
-    );
+    throw new AppError("Obligation not found", 404);
   }
 
   return res.status(200).json({
@@ -94,37 +73,21 @@ const obligation = await getObligationById(
   });
 };
 
-export const update = async (
-  req: Request,
-  res: Response,
-) => {
+export const update = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
   const { id } = req.params;
 
   if (typeof id !== "string") {
-    throw new AppError(
-      "Invalid obligation ID",
-      400,
-    );
+    throw new AppError("Invalid obligation ID", 400);
   }
 
-  const obligation = await updateObligation(
-    id,
-    req.user.id,
-    req.body,
-  );
+  const obligation = await updateObligation(id, req.user.id, req.body);
 
   if (!obligation) {
-    throw new AppError(
-      "Obligation not found",
-      404,
-    );
+    throw new AppError("Obligation not found", 404);
   }
 
   return res.status(200).json({
@@ -136,36 +99,21 @@ export const update = async (
   });
 };
 
-export const archive = async (
-  req: Request,
-  res: Response,
-) => {
+export const archive = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
   const { id } = req.params;
 
   if (typeof id !== "string") {
-    throw new AppError(
-      "Invalid obligation ID",
-      400,
-    );
+    throw new AppError("Invalid obligation ID", 400);
   }
 
-  const obligation = await archiveObligation(
-    id,
-    req.user.id,
-  );
+  const obligation = await archiveObligation(id, req.user.id);
 
   if (!obligation) {
-    throw new AppError(
-      "Obligation not found",
-      404,
-    );
+    throw new AppError("Obligation not found", 404);
   }
 
   return res.status(200).json({
@@ -177,89 +125,51 @@ export const archive = async (
   });
 };
 
-export const markAsPaid = async (
-  req: Request,
-  res: Response,
-) => {
+export const markAsPaid = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
   const { id } = req.params;
 
-  const obligationId = Array.isArray(id)
-    ? id[0]
-    : id;
-
-  if (!obligationId) {
-    throw new AppError(
-      "Obligation ID is required",
-      400,
-    );
+  if (typeof id !== "string") {
+    throw new AppError("Invalid obligation ID", 400);
   }
 
-  const paymentDate =
-    req.body?.paymentDate
-      ? new Date(req.body.paymentDate)
-      : new Date();
+  const paymentDate = req.body?.paymentDate
+    ? new Date(req.body.paymentDate)
+    : new Date();
 
-  const obligation =
-    await markObligationAsPaid(
-      obligationId,
-      req.user.id,
-      paymentDate,
-    );
+  const obligation = await markObligationAsPaid(id, req.user.id, paymentDate);
 
   if (!obligation) {
-    throw new AppError(
-      "Obligation not found or cannot be marked as paid",
-      404,
-    );
+    throw new AppError("Obligation not found or cannot be marked as paid", 404);
   }
 
   return res.status(200).json({
     success: true,
-    message:
-      "Obligation marked as paid successfully",
+    message: "Obligation marked as paid successfully",
     data: {
       obligation,
     },
   });
 };
 
-export const pause = async (
-  req: Request,
-  res: Response,
-) => {
+export const pause = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
   const { id } = req.params;
 
   if (typeof id !== "string") {
-    throw new AppError(
-      "Invalid obligation ID",
-      400,
-    );
+    throw new AppError("Invalid obligation ID", 400);
   }
 
-  const obligation = await pauseObligation(
-    id,
-    req.user.id,
-  );
+  const obligation = await pauseObligation(id, req.user.id);
 
   if (!obligation) {
-    throw new AppError(
-      "Obligation not found or cannot be paused",
-      404,
-    );
+    throw new AppError("Obligation not found or cannot be paused", 404);
   }
 
   return res.status(200).json({
@@ -271,36 +181,21 @@ export const pause = async (
   });
 };
 
-export const resume = async (
-  req: Request,
-  res: Response,
-) => {
+export const resume = async (req: Request, res: Response) => {
   if (!req.user) {
-    throw new AppError(
-      "Authentication required",
-      401,
-    );
+    throw new AppError("Authentication required", 401);
   }
 
   const { id } = req.params;
 
   if (typeof id !== "string") {
-    throw new AppError(
-      "Invalid obligation ID",
-      400,
-    );
+    throw new AppError("Invalid obligation ID", 400);
   }
 
-  const obligation = await resumeObligation(
-    id,
-    req.user.id,
-  );
+  const obligation = await resumeObligation(id, req.user.id);
 
   if (!obligation) {
-    throw new AppError(
-      "Obligation not found or cannot be resumed",
-      404,
-    );
+    throw new AppError("Obligation not found or cannot be resumed", 404);
   }
 
   return res.status(200).json({

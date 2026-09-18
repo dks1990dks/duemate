@@ -2,6 +2,8 @@ import { Resend } from "resend";
 
 import { env } from "../config/env.js";
 
+import logger from "./logger.js";
+
 const apiKey = env.resendApiKey;
 const fromEmail = env.fromEmail;
 const clientUrl = env.clientUrl;
@@ -190,7 +192,7 @@ This link will expire in 24 hours.
     );
   }
 
-  console.log("Verification email sent:", data?.id);
+  logger.info("Verification email sent:", data?.id);
 };
 
 export const sendPasswordResetEmail = async (
@@ -384,5 +386,5 @@ If you did not request a password reset, you can safely ignore this email.
     );
   }
 
-  console.log("Password reset email sent:", data?.id);
+  logger.info("Password reset email sent:", data?.id);
 };

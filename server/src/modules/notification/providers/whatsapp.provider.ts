@@ -2,6 +2,8 @@ import twilio from "twilio";
 
 import { env } from "../../../config/env.js";
 
+import logger from "../../../utils/logger.js";
+
 const accountSid = env.twilioAccountSid;
 const authToken = env.twilioAuthToken;
 const whatsappFrom = env.twilioWhatsAppFrom;
@@ -20,9 +22,7 @@ if (!whatsappFrom) {
 }
 
 if (!contentSid) {
-  throw new Error(
-    "TWILIO_WHATSAPP_CONTENT_SID is not configured",
-  );
+  throw new Error("TWILIO_WHATSAPP_CONTENT_SID is not configured");
 }
 
 const client = twilio(accountSid, authToken);
@@ -44,12 +44,10 @@ export const sendWhatsApp = async ({
   });
 
   if (!message.sid) {
-    throw new Error(
-      "Twilio did not return a WhatsApp message SID",
-    );
+    throw new Error("Twilio did not return a WhatsApp message SID");
   }
 
-  console.log("[WhatsApp] Sent successfully:", {
+  logger.info("[WhatsApp] Sent successfully:", {
     messageSid: message.sid,
     to,
   });

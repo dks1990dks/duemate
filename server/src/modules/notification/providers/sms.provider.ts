@@ -2,6 +2,8 @@ import twilio from "twilio";
 
 import { env } from "../../../config/env.js";
 
+import logger from "../../../utils/logger.js";
+
 const accountSid = env.twilioAccountSid;
 
 const authToken = env.twilioAuthToken;
@@ -22,15 +24,9 @@ if (!fromPhoneNumber) {
 
 const client = twilio(accountSid, authToken);
 
-import type {
-  SmsProvider,
-  SmsProviderInput,
-} from "./provider.types.js";
+import type { SmsProvider, SmsProviderInput } from "./provider.types.js";
 
-export const sendSms = async ({
-    to,
-  body,
-}: SmsProviderInput) => {
+export const sendSms = async ({ to, body }: SmsProviderInput) => {
   const message = await client.messages.create({
     body,
     from: fromPhoneNumber,
@@ -41,7 +37,7 @@ export const sendSms = async ({
     throw new Error("Twilio did not return a message SID");
   }
 
-  console.log("[SMS] Sent successfully:", {
+  logger.info("[SMS] Sent successfully:", {
     messageSid: message.sid,
     to,
   });

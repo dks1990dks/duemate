@@ -1,7 +1,11 @@
+import { Types } from "mongoose";
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../utils/AppError.js";
 
-import { getReminderDeliveryHistory,getObligationDeliveryHistory } from "./notification-delivery.service.js";
+import {
+  getReminderDeliveryHistory,
+  getObligationDeliveryHistory,
+} from "./notification-delivery.service.js";
 
 import {
   getUserNotifications,
@@ -9,8 +13,6 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from "./notification.service.js";
-
-
 
 export const getAll = async (
   req: Request,
@@ -21,21 +23,12 @@ export const getAll = async (
     const pageValue = req.query.page;
     const limitValue = req.query.limit;
 
-    const page =
-      typeof pageValue === "string"
-        ? Number(pageValue)
-        : 1;
+    const page = typeof pageValue === "string" ? Number(pageValue) : 1;
 
-    const limit =
-      typeof limitValue === "string"
-        ? Number(limitValue)
-        : 20;
+    const limit = typeof limitValue === "string" ? Number(limitValue) : 20;
 
     // Validate page number.
-    if (
-      !Number.isInteger(page) ||
-      page < 1
-    ) {
+    if (!Number.isInteger(page) || page < 1) {
       return res.status(400).json({
         success: false,
         message: "Page must be a positive integer",
@@ -43,23 +36,18 @@ export const getAll = async (
     }
 
     // Validate limit and prevent excessive queries.
-    if (
-      !Number.isInteger(limit) ||
-      limit < 1 ||
-      limit > 100
-    ) {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
       return res.status(400).json({
         success: false,
-        message:
-          "Limit must be a positive integer between 1 and 100",
+        message: "Limit must be a positive integer between 1 and 100",
       });
     }
 
-    const result = await getUserNotifications(
-      req.user!.id,
-      page,
-      limit,
-    );
+    if (!req.user) {
+      throw new AppError("Authentication required", 401);
+    }
+
+    const result = await getUserNotifications(req.user.id, page, limit);
 
     return res.status(200).json({
       success: true,
@@ -77,7 +65,10 @@ export const getUnreadCount = async (
   next: NextFunction,
 ) => {
   try {
-    const count = await getUnreadNotificationCount(req.user!.id);
+    if (!req.user) {
+      throw new AppError("Authentication required", 401);
+    }
+    const count = await getUnreadNotificationCount(req.user.id);
 
     return res.status(200).json({
       success: true,
@@ -99,16 +90,21 @@ export const markAsRead = async (
   try {
     const notificationId = req.params.notificationId;
 
-    if (!notificationId || Array.isArray(notificationId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid notification ID",
-      });
+    if (
+      !notificationId ||
+      Array.isArray(notificationId) ||
+      !Types.ObjectId.isValid(notificationId)
+    ) {
+      throw new AppError("Invalid notification ID", 400);
+    }
+
+    if (!req.user) {
+      throw new AppError("Authentication required", 401);
     }
 
     const notification = await markNotificationAsRead(
       notificationId,
-      req.user!.id,
+      req.user.id,
     );
 
     if (!notification) {
@@ -136,7 +132,10 @@ export const markAllAsRead = async (
   next: NextFunction,
 ) => {
   try {
-    const result = await markAllNotificationsAsRead(req.user!.id);
+    if (!req.user) {
+      throw new AppError("Authentication required", 401);
+    }
+    const result = await markAllNotificationsAsRead(req.user.id);
 
     return res.status(200).json({
       success: true,
@@ -156,17 +155,21 @@ export const getReminderDelivery = async (
   next: NextFunction,
 ) => {
   try {
-    const userId = req.user!.id;
+    if (!req.user) {
+      throw new AppError("Authentication required", 401);
+    }
+    const userId = req.user.id;
     const { reminderId } = req.params;
 
-if (!reminderId || Array.isArray(reminderId)) {
-  throw new AppError("Invalid reminder ID", 400);
-}
+    if (
+      !reminderId ||
+      Array.isArray(reminderId) ||
+      !Types.ObjectId.isValid(reminderId)
+    ) {
+      throw new AppError("Invalid reminder ID", 400);
+    }
 
-const deliveries = await getReminderDeliveryHistory(
-  reminderId,
-  userId,
-);
+    const deliveries = await getReminderDeliveryHistory(reminderId, userId);
 
     return res.status(200).json({
       success: true,
@@ -186,22 +189,25 @@ export const getObligationDelivery = async (
   next: NextFunction,
 ) => {
   try {
+    if (!req.user) {
+      throw new AppError("Authentication required", 401);
+    }
     const userId = req.user!.id;
     const { obligationId } = req.params;
 
-    if (!obligationId || Array.isArray(obligationId)) {
+    if (
+      !obligationId ||
+      Array.isArray(obligationId) ||
+      !Types.ObjectId.isValid(obligationId)
+    ) {
       throw new AppError("Invalid obligation ID", 400);
     }
 
-    const deliveries = await getObligationDeliveryHistory(
-      obligationId,
-      userId,
-    );
+    const deliveries = await getObligationDeliveryHistory(obligationId, userId);
 
     return res.status(200).json({
       success: true,
-      message:
-        "Obligation delivery history retrieved successfully",
+      message: "Obligation delivery history retrieved successfully",
       data: {
         deliveries,
       },

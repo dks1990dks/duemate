@@ -1,14 +1,14 @@
-import {
-  cleanupOldNotifications,
-} from "./notification.cleanup.js";
+import { cleanupOldNotifications } from "./notification.cleanup.js";
+import logger from "../../utils/logger.js";
 
 let isCleanupRunning = false;
+let notificationCleanupInterval: ReturnType<typeof setInterval> | null = null;
 
 export const runNotificationCleanup = async () => {
   // Prevent overlapping cleanup jobs
   // inside the same Node.js process.
   if (isCleanupRunning) {
-    console.log(
+    logger.info(
       "[Notification Cleanup] Previous cleanup is still running. Skipping.",
     );
 
@@ -20,25 +20,19 @@ export const runNotificationCleanup = async () => {
   try {
     const result = await cleanupOldNotifications();
 
-    console.log(
-      "[Notification Cleanup] Completed:",
-      {
-        deletedCount: result.deletedCount,
-        cutoffDate: result.cutoffDate,
-      },
-    );
+    logger.info("[Notification Cleanup] Completed:", {
+      deletedCount: result.deletedCount,
+      cutoffDate: result.cutoffDate,
+    });
   } catch (error) {
-    console.error(
-      "[Notification Cleanup] Failed:",
-      error,
-    );
+    logger.error("[Notification Cleanup] Failed:", error);
   } finally {
     isCleanupRunning = false;
   }
 };
 
 export const startNotificationCleanupScheduler = () => {
-  console.log(
+  logger.info(
     "[Notification Cleanup] Started. Running cleanup every 24 hours.",
   );
 
@@ -46,10 +40,21 @@ export const startNotificationCleanupScheduler = () => {
   void runNotificationCleanup();
 
   // Then run every 24 hours.
-  setInterval(
+  notificationCleanupInterval = setInterval(
     () => {
       void runNotificationCleanup();
     },
     24 * 60 * 60 * 1000,
   );
+};
+
+export const stopNotificationCleanupScheduler = (): void => {
+  if (!notificationCleanupInterval) {
+    return;
+  }
+
+  clearInterval(notificationCleanupInterval);
+  notificationCleanupInterval = null;
+
+  logger.info("[Notification Cleanup] Stopped.");
 };

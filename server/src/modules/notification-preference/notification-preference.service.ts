@@ -8,10 +8,20 @@ import type {
   NotificationChannel,
 } from "../notification/notification.constants.js";
 
+import { AppError } from "../../utils/AppError.js";
+
+const toUserObjectId = (userId: string): Types.ObjectId => {
+  if (!Types.ObjectId.isValid(userId)) {
+    throw new AppError("Invalid user ID", 400);
+  }
+
+  return new Types.ObjectId(userId);
+};
+
 export const getOrCreateNotificationPreferences = async (
   userId: string,
 ) => {
-  const userObjectId = new Types.ObjectId(userId);
+  const userObjectId = toUserObjectId(userId);
 
   const existingPreferences =
     await NotificationPreference.findOne({

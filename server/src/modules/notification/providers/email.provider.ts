@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { env } from "../../../config/env.js";
+import logger from "../../../utils/logger.js";
 
 const apiKey = env.resendApiKey;
 const fromEmail = env.fromEmail;
@@ -44,10 +45,10 @@ export const sendEmail = async ({
     throw new Error("Resend did not return an email ID");
   }
 
-  console.log("[Email] Sent successfully:", {
-    emailId: data.id,
-    to,
-  });
+  logger.info("[Email] Sent successfully:", {
+  emailId: data.id,
+  to,
+});
 
   return {
     messageId: data.id,

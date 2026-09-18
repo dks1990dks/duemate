@@ -77,6 +77,29 @@ const isProviderNotConfiguredError = (error: unknown) => {
   );
 };
 
+const getSafeNotificationError = (
+  channel: NotificationChannel,
+): string => {
+  switch (channel) {
+    case "SMS":
+      return "SMS delivery is currently unavailable";
+
+    case "WHATSAPP":
+      return "WhatsApp delivery is currently unavailable";
+
+    case "EMAIL":
+      return "Email delivery could not be completed";
+
+    case "IN_APP":
+      return "In-app delivery could not be completed";
+
+    default: {
+      const exhaustiveCheck: never = channel;
+      return `Notification delivery failed: ${exhaustiveCheck}`;
+    }
+  }
+};
+
 export const dispatchNotification = async (
   payload: NotificationPayload,
 ): Promise<NotificationDeliveryResult[]> => {
@@ -116,10 +139,7 @@ export const dispatchNotification = async (
           retryable: isNotConfigured
             ? false
             : isRetryableNotificationError(error),
-          error:
-            error instanceof Error
-              ? error.message
-              : "Unknown notification delivery error",
+          error: getSafeNotificationError(channel),
         };
       }
     }),
