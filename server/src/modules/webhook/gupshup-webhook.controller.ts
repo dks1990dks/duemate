@@ -2,18 +2,12 @@ import type { Request, Response, NextFunction } from "express";
 
 import logger from "../../utils/logger.js";
 
-import {
-  updateWhatsAppDeliveryFromWebhook,
-} from "../notification/notification-delivery.service.js";
+import { updateWhatsAppDeliveryFromWebhook } from "../notification/notification-delivery.service.js";
 
 interface GupshupMessageEventPayload {
   id: string;
-  type:
-    | "enqueued"
-    | "sent"
-    | "delivered"
-    | "read"
-    | "failed";
+  gsId?: string;
+  type: "enqueued" | "sent" | "delivered" | "read" | "failed";
   destination?: string;
   payload?: unknown;
 }
@@ -29,36 +23,26 @@ interface GupshupWebhookPayload {
 const isMessageEventPayload = (
   value: unknown,
 ): value is GupshupMessageEventPayload => {
-  if (
-    typeof value !== "object" ||
-    value === null
-  ) {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
 
   const payload = value as Record<string, unknown>;
 
-  return (
-    typeof payload.id === "string" &&
-    typeof payload.type === "string"
-  );
+  return typeof payload.id === "string" && typeof payload.type === "string";
 };
 
 const isGupshupWebhookPayload = (
   value: unknown,
 ): value is GupshupWebhookPayload => {
-  if (
-    typeof value !== "object" ||
-    value === null
-  ) {
+  if (typeof value !== "object" || value === null) {
     return false;
   }
 
   const payload = value as Record<string, unknown>;
 
   return (
-    payload.type === "message-event" &&
-    isMessageEventPayload(payload.payload)
+    payload.type === "message-event" && isMessageEventPayload(payload.payload)
   );
 };
 
@@ -68,10 +52,7 @@ const getFailureDetails = (
   code: number | undefined;
   reason: string;
 } => {
-  if (
-    typeof value !== "object" ||
-    value === null
-  ) {
+  if (typeof value !== "object" || value === null) {
     return {
       code: undefined,
       reason: "WhatsApp delivery failed",
@@ -80,14 +61,10 @@ const getFailureDetails = (
 
   const payload = value as Record<string, unknown>;
 
-  const code =
-    typeof payload.code === "number"
-      ? payload.code
-      : undefined;
+  const code = typeof payload.code === "number" ? payload.code : undefined;
 
   const reason =
-    typeof payload.reason === "string" &&
-    payload.reason.trim().length > 0
+    typeof payload.reason === "string" && payload.reason.trim().length > 0
       ? payload.reason
       : "WhatsApp delivery failed";
 
@@ -150,26 +127,35 @@ export const handleGupshupWebhook = async (
       });
     }
 
+    /*
+     * Gupshup V2 uses:
+     *
+     * enqueued → event.id is the Gupshup message ID
+     * failed   → gsId may contain the Gupshup message ID
+     * sent/delivered/read → gsId is the Gupshup message ID
+     *
+     * NotificationDelivery stores the Gupshup message ID.
+     */
+
     if (eventType === "failed") {
-      const failure = getFailureDetails(
-        event.payload,
-      );
+      const failure = getFailureDetails(event.payload);
 
       const retryable = isRetryableWhatsAppFailure(
         failure.code,
         failure.reason,
       );
 
-      const delivery =
-        await updateWhatsAppDeliveryFromWebhook({
-          messageId: event.id,
-          eventType: "failed",
-          error: `WhatsApp delivery failed: ${failure.reason}`,
-          retryable,
-        });
+      const messageId = event.gsId ?? event.id;
+
+      const delivery = await updateWhatsAppDeliveryFromWebhook({
+        messageId,
+        eventType: "failed",
+        error: `WhatsApp delivery failed: ${failure.reason}`,
+        retryable,
+      });
 
       logger.warn("[Gupshup Webhook] WhatsApp delivery failed", {
-        messageId: event.id,
+        messageId,
         code: failure.code,
         retryable,
         deliveryUpdated: Boolean(delivery),
@@ -180,14 +166,30 @@ export const handleGupshupWebhook = async (
       });
     }
 
-    const delivery =
-      await updateWhatsAppDeliveryFromWebhook({
-        messageId: event.id,
+    const messageId =
+      eventType === "sent" ||
+      eventType === "delivered" ||
+      eventType === "read"
+        ? event.gsId
+        : event.id;
+
+    if (!messageId) {
+      logger.warn("[Gupshup Webhook] Missing Gupshup message ID", {
         eventType,
       });
 
+      return res.status(200).json({
+        success: true,
+      });
+    }
+
+    const delivery = await updateWhatsAppDeliveryFromWebhook({
+      messageId,
+      eventType,
+    });
+
     logger.info("[Gupshup Webhook] WhatsApp event processed", {
-      messageId: event.id,
+      messageId,
       eventType,
       deliveryUpdated: Boolean(delivery),
     });
