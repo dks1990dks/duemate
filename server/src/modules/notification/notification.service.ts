@@ -2,6 +2,7 @@ import { env } from "../../config/env.js";
 import { Notification } from "./notification.model.js";
 import { User } from "../../models/User.js";
 import { notificationProviders } from "./providers/provider.registry.js";
+import { NotificationDelivery } from "./notification-delivery.model.js";
 import type {
   CreateInAppNotificationInput,
   NotificationPayload,
@@ -50,7 +51,7 @@ export const sendInAppNotification = async (payload: NotificationPayload) => {
 
 export const sendEmailNotification = async (
   payload: NotificationPayload,
-): Promise<void> => {
+): Promise<{ messageId?: string }> => {
   const user = await User.findById(payload.userId).select("name email");
 
   if (!user) {
@@ -468,11 +469,12 @@ This is an automated reminder from DueMate.
     userId: payload.userId,
     messageId: result.messageId,
   });
+  return result;
 };
 
 export const sendSmsNotification = async (
   payload: NotificationPayload,
-): Promise<void> => {
+): Promise<{ messageId?: string }> => {
   const user = await User.findById(payload.userId).select("name email phone");
 
   if (!user) {
@@ -493,11 +495,12 @@ export const sendSmsNotification = async (
     userId: payload.userId,
     messageId: result.messageId,
   });
+  return result;
 };
 
 export const sendWhatsAppNotification = async (
   payload: NotificationPayload,
-): Promise<void> => {
+): Promise<{ messageId?: string }> => {
   const user = await User.findById(payload.userId).select(
     "name email phone",
   );
@@ -534,11 +537,31 @@ export const sendWhatsAppNotification = async (
     },
   });
 
-  logger.info("[Notification] WHATSAPP delivered", {
+  await NotificationDelivery.findOneAndUpdate(
+  {
     reminderId: payload.reminderId,
     userId: payload.userId,
-    messageId: result.messageId,
-  });
+    channel: "WHATSAPP",
+  },
+  {
+    $set: {
+      messageId: result.messageId ?? null,
+      status: "SENT",
+      success: true,
+      retryable: false,
+      error: null,
+      deliveredAt: new Date(),
+    },
+  },
+);
+
+  logger.info("[Notification] WHATSAPP delivered", {
+  reminderId: payload.reminderId,
+  userId: payload.userId,
+  messageId: result.messageId,
+});
+
+return result;
 };
 
 export const getUserNotifications = async (

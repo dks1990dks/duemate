@@ -44,23 +44,20 @@ const isRetryableNotificationError = (error: unknown): boolean => {
 const sendByChannel = async (
   channel: NotificationChannel,
   payload: NotificationPayload,
-): Promise<void> => {
+): Promise<{ messageId?: string }> => {
   switch (channel) {
     case "IN_APP":
       await sendInAppNotification(payload);
-      return;
+      return {};
 
     case "EMAIL":
-      await sendEmailNotification(payload);
-      return;
+      return await sendEmailNotification(payload);
 
     case "SMS":
-      await sendSmsNotification(payload);
-      return;
+      return await sendSmsNotification(payload);
 
     case "WHATSAPP":
-      await sendWhatsAppNotification(payload);
-      return;
+      return await sendWhatsAppNotification(payload);
 
     default: {
       const exhaustiveCheck: never = channel;
@@ -77,9 +74,7 @@ const isProviderNotConfiguredError = (error: unknown) => {
   );
 };
 
-const getSafeNotificationError = (
-  channel: NotificationChannel,
-): string => {
+const getSafeNotificationError = (channel: NotificationChannel): string => {
   switch (channel) {
     case "SMS":
       return "SMS delivery is currently unavailable";
@@ -119,13 +114,16 @@ export const dispatchNotification = async (
   const results = await Promise.all(
     enabledChannels.map(async (channel) => {
       try {
-        await sendByChannel(channel, payload);
+        const providerResult = await sendByChannel(channel, payload);
 
         return {
           channel,
           status: "SENT" as const,
           success: true,
           retryable: false,
+          ...(providerResult.messageId
+            ? { messageId: providerResult.messageId }
+            : {}),
         };
       } catch (error) {
         const isNotConfigured = isProviderNotConfiguredError(error);
