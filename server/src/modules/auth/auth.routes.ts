@@ -45,6 +45,13 @@ router.patch(
   asyncHandler(authController.updateMe),
 );
 
+router.patch(
+  "/change-password",
+  requireAuth,
+  validateRequest(authSchema.changePasswordSchema),
+  asyncHandler(authController.changePassword),
+);
+
 router.get(
   "/verify-email",
   verificationRateLimiter,

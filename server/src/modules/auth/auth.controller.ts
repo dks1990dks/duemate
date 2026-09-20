@@ -634,3 +634,80 @@ export const resetPassword = async (req: Request, res: Response) => {
     data: null,
   });
 };
+
+// Change Password
+export const changePassword = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new AppError(
+      "Unauthorized: User identifier missing from request",
+      401,
+    );
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.findById(userId).select("+passwordHash");
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (!user.isActive) {
+    throw new AppError("This account is inactive", 403);
+  }
+
+  const currentPasswordValid = await user.comparePassword(currentPassword);
+
+  if (!currentPasswordValid) {
+    await logAuditEvent({
+      userId: user._id,
+      action: "PASSWORD_CHANGE_FAILED",
+      req,
+      metadata: {
+        reason: "INVALID_CURRENT_PASSWORD",
+      },
+    });
+
+    throw new AppError("Current password is incorrect", 400);
+  }
+
+  const samePassword = await bcrypt.compare(
+    newPassword,
+    user.passwordHash,
+  );
+
+  if (samePassword) {
+    throw new AppError(
+      "New password must be different from your current password",
+      400,
+    );
+  }
+
+  user.passwordHash = await bcrypt.hash(newPassword, 12);
+
+  user.failedLoginAttempts = 0;
+  user.set("lockUntil", undefined);
+
+  await user.save();
+
+  // Security: revoke all active sessions.
+  // The user must log in again on every device.
+  await revokeAllUserSessions(String(user._id));
+
+  await logAuditEvent({
+    userId: user._id,
+    action: "PASSWORD_CHANGE_SUCCESS",
+    req,
+  });
+
+  clearAuthCookies(res);
+
+  return res.status(200).json({
+    success: true,
+    message:
+      "Password changed successfully. Please log in again with your new password.",
+    data: null,
+  });
+};
