@@ -41,9 +41,7 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
         className={[
           "fixed left-0 top-0 z-50 h-screen w-64 shrink-0 border-r border-slate-200 bg-white transition-transform duration-200",
           "lg:sticky lg:z-auto lg:block lg:translate-x-0",
-          isOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         ].join(" ")}
       >
         <div className="flex h-full flex-col justify-between">
@@ -51,22 +49,22 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
             {/* Logo */}
             <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
               <div className="flex items-center gap-3">
-  <img
-    src="/duemate-icon.png"
-    alt="DueMate"
-    className="h-10 w-10 rounded-xl object-cover"
-  />
+                <img
+                  src="/duemate-icon.png"
+                  alt="DueMate"
+                  className="h-10 w-10 rounded-xl object-cover"
+                />
 
-  <div>
-    <div className="text-xl font-bold text-slate-900">
-      DueMate
-    </div>
+                <div>
+                  <div className="text-xl font-bold text-slate-900">
+                    DueMate
+                  </div>
 
-    <p className="mt-1 text-xs text-slate-500">
-      Financial reminder manager
-    </p>
-  </div>
-</div>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Financial reminder manager
+                  </p>
+                </div>
+              </div>
               {/* Mobile Close Button */}
               <button
                 type="button"
@@ -93,15 +91,25 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
             </nav>
           </div>
 
-          {/* Settings */}
+          {/* Account */}
           <div className="border-t border-slate-200 p-4">
-            <NavLink
-              to="/settings"
-              className={getNavLinkClass}
-              onClick={onClose}
-            >
-              Settings
-            </NavLink>
+            <div className="space-y-1">
+              <NavLink
+                to="/profile"
+                className={getNavLinkClass}
+                onClick={onClose}
+              >
+                Profile
+              </NavLink>
+
+              <NavLink
+                to="/security"
+                className={getNavLinkClass}
+                onClick={onClose}
+              >
+                Security
+              </NavLink>
+            </div>
           </div>
         </div>
       </aside>

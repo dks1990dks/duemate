@@ -4,6 +4,8 @@ import {
   logoutUser,
   registerUser,
   resendVerificationEmail,
+  updateCurrentUser,
+   changePassword,
 } from "./auth.api";
 
 export const useRegister = () => {
@@ -27,5 +29,17 @@ export const useLogout = () => {
 export const useResendVerification = () => {
   return useMutation({
     mutationFn: resendVerificationEmail,
+  });
+};
+
+export const useUpdateProfile = () => {
+  return useMutation({
+    mutationFn: updateCurrentUser,
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: changePassword,
   });
 };

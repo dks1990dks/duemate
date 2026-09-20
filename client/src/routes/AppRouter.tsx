@@ -23,6 +23,8 @@ import EditObligationPage from "@/features/obligations/pages/EditObligationPage"
 
 import NotificationsPage from "@/features/notifications/pages/NotificationsPage";
 import NotificationPreferencesPage from "@/features/notification-preferences/pages/NotificationPreferencesPage";
+import ProfilePage from "@/features/profile/pages/ProfilePage";
+import SecurityPage from "@/features/profile/pages/SecurityPage";
 
 const AppRouter = () => {
   return (
@@ -60,6 +62,8 @@ const AppRouter = () => {
             path="/obligations/:id/edit"
             element={<EditObligationPage />}
           />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/security" element={<SecurityPage />} />
         </Route>
       </Route>
 

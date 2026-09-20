@@ -291,13 +291,16 @@ const Header = ({ onMenuClick }: HeaderProps) => {
           )}
         </div>
 
-        {/* User */}
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700"
+        {/* User Profile */}
+        <button
+          type="button"
+          onClick={() => navigate("/profile")}
+          aria-label="Open profile"
           title={user ? `${user.name} (${user.email})` : "User profile"}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700 transition hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           {userInitial}
-        </div>
+        </button>
 
         {/* Logout */}
         <button

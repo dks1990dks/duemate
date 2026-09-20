@@ -28,6 +28,34 @@ export const getCurrentUser = async (): Promise<AuthResponse> => {
   return response.data;
 };
 
+export interface UpdateProfileInput {
+  name: string;
+  phone: string;
+}
+
+export const updateCurrentUser = async (
+  data: UpdateProfileInput,
+): Promise<AuthResponse> => {
+  const response = await api.patch<AuthResponse>(
+    "/auth/me",
+    data,
+  );
+
+  return response.data;
+};
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export const changePassword = async (
+  data: ChangePasswordInput,
+): Promise<void> => {
+  await api.patch("/auth/change-password", data);
+};
+
 export const forgotPassword = async (data: ForgotPasswordInput) => {
   const response = await api.post("/auth/forgot-password", data);
 
