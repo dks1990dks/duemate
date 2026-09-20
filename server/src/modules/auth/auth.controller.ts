@@ -374,6 +374,85 @@ export const getMe = async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        isEmailVerified: user.isEmailVerified,
+      },
+    },
+  });
+};
+
+// Update Current User
+export const updateMe = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new AppError(
+      "Unauthorized: User identifier missing from request",
+      401,
+    );
+  }
+
+  const { name, phone } = req.body;
+
+  const trimmedName = typeof name === "string" ? name.trim() : "";
+  const rawPhone = typeof phone === "string" ? phone.trim() : "";
+
+  if (trimmedName.length < 2) {
+    throw new AppError("Name must be at least 2 characters", 400);
+  }
+
+  if (trimmedName.length > 100) {
+    throw new AppError("Name cannot exceed 100 characters", 400);
+  }
+
+  const digits = rawPhone.replace(/\D/g, "");
+
+  let normalizedPhone: string;
+
+  if (digits.length === 10) {
+    normalizedPhone = `+91${digits}`;
+  } else if (digits.length === 12 && digits.startsWith("91")) {
+    normalizedPhone = `+${digits}`;
+  } else if (
+    rawPhone.startsWith("+") &&
+    digits.length >= 8 &&
+    digits.length <= 15
+  ) {
+    normalizedPhone = rawPhone;
+  } else {
+    throw new AppError("Invalid phone number", 400);
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (!user.isActive) {
+    throw new AppError("This account is inactive", 403);
+  }
+
+  user.name = trimmedName;
+  user.phone = normalizedPhone;
+
+  await user.save();
+
+  await logAuditEvent({
+    userId: user._id,
+    action: "PROFILE_UPDATED",
+    req,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    data: {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
         isEmailVerified: user.isEmailVerified,
       },
     },

@@ -38,6 +38,13 @@ router.post(
 
 router.get("/me", requireAuth, asyncHandler(authController.getMe));
 
+router.patch(
+  "/me",
+  requireAuth,
+  validateRequest(authSchema.updateProfileSchema),
+  asyncHandler(authController.updateMe),
+);
+
 router.get(
   "/verify-email",
   verificationRateLimiter,

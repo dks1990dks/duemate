@@ -6,7 +6,7 @@ import {
   createSession,
   setSessionRefreshToken,
 } from "../../services/sessionService.js";
-import type { AuthUser, LoginInput, RegisterInput } from "./auth.types.js";
+import type { AuthUser, LoginInput, RegisterInput, } from "./auth.types.js";
 
 const sanitizeUser = (user: {
   _id: unknown;
@@ -132,3 +132,4 @@ export const loginUser = async (
     refreshToken,
   };
 };
+
