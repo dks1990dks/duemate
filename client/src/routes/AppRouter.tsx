@@ -25,6 +25,10 @@ import NotificationsPage from "@/features/notifications/pages/NotificationsPage"
 import NotificationPreferencesPage from "@/features/notification-preferences/pages/NotificationPreferencesPage";
 import ProfilePage from "@/features/profile/pages/ProfilePage";
 import SecurityPage from "@/features/profile/pages/SecurityPage";
+import AdminRoute from "@/routes/AdminRoute";
+import AdminDashboardPage from "@/features/admin/pages/AdminDashboardPage";
+import AdminUsersPage from "@/features/admin/pages/AdminUsersPage";
+import AdminNotificationsPage from "@/features/admin/pages/AdminNotificationsPage";
 
 const AppRouter = () => {
   return (
@@ -37,7 +41,10 @@ const AppRouter = () => {
           <Route path="/register" element={<RegisterPage />} />
 
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/resend-verification" element={<ResendVerificationPage />} />
+          <Route
+            path="/resend-verification"
+            element={<ResendVerificationPage />}
+          />
         </Route>
 
         {/* Token/action pages remain directly accessible */}
@@ -64,6 +71,16 @@ const AppRouter = () => {
           />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/security" element={<SecurityPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+
+            <Route
+              path="/admin/notifications"
+              element={<AdminNotificationsPage />}
+            />
+          </Route>
         </Route>
       </Route>
 

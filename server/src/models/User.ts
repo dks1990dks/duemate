@@ -3,11 +3,14 @@ import bcrypt from "bcryptjs";
 
 import { authConfig } from "@/config/auth.js";
 
+export type UserRole = "USER" | "ADMIN";
+
 export interface IUser {
   name: string;
   email: string;
   phone: string;
   passwordHash: string;
+  role:UserRole;
 
   isEmailVerified: boolean;
   isActive: boolean;
@@ -71,6 +74,14 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: String,
       required: true,
       select: false,
+    },
+
+    role: {
+      type: String,
+      enum: ["USER", "ADMIN"],
+      default: "USER",
+      required: true,
+      index: true,
     },
 
     isEmailVerified: {

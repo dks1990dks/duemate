@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "@/features/auth/AuthContext";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -16,6 +17,7 @@ const navigation = [
 ];
 
 const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
+  const { user } = useAuth();
   const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     [
       "block rounded-lg px-3 py-2.5 text-sm font-medium transition",
@@ -88,6 +90,15 @@ const Sidebar = ({ isOpen = false, onClose }: SidebarProps) => {
                   {item.label}
                 </NavLink>
               ))}
+              {user?.role === "ADMIN" && (
+                <NavLink
+                  to="/admin"
+                  className={getNavLinkClass}
+                  onClick={onClose}
+                >
+                  Admin
+                </NavLink>
+              )}
             </nav>
           </div>
 

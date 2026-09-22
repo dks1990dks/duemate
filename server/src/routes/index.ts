@@ -9,7 +9,8 @@ import notificationRoutes from "../modules/notification/notification.routes.js";
 import notificationPreferenceRoutes from
   "../modules/notification-preference/notification-preference.routes.js";
 
-import gupshupWebhookRoutes from "../modules/webhook/gupshup-webhook.routes.js";  
+import gupshupWebhookRoutes from "../modules/webhook/gupshup-webhook.routes.js";
+import adminRoutes from "../modules/admin/admin.routes.js";  
 
 const router = Router();
 
@@ -38,6 +39,11 @@ router.use(
 router.use(
   "/notification-preferences",
   notificationPreferenceRoutes,
+);
+
+router.use(
+  "/admin",
+  adminRoutes,
 );
 
 router.use(
